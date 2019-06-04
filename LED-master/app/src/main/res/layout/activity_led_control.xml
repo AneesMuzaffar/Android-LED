@@ -17,7 +17,16 @@
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
         android:textColor="#f44336"
-        android:textSize="23dp" />
+        android:textSize="23sp" />
+
+    <TextView
+        android:id="@+id/tv_recv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBottom="@id/textView2"
+        android:layout_marginBottom="-47dp"
+        android:text="TEST"
+        android:textSize="16sp" />
 
 
     <Button
@@ -47,6 +56,20 @@
         android:textSize="30sp"
         android:background="@drawable/rounded_button"
         tools:text="OFF"
+        tools:typeface="monospace" />
+
+    <Button
+        android:layout_width="170dp"
+        android:layout_height="60dp"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="400dp"
+        android:textColor="#212121"
+        android:fadingEdge="none"
+        android:id="@+id/recv_btn"
+        android:fontFamily="sans-serif-smallcaps"
+        android:textSize="30sp"
+        android:background="@drawable/rounded_button"
+        tools:text="RECEIVE"
         tools:typeface="monospace" />
 
     <Button
