@@ -1,6 +1,6 @@
 package com.led_on_off.led;
 
-import android.support.v7.app.ActionBarActivity;
+import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -20,7 +20,7 @@ import java.io.IOException;
 import java.util.UUID;
 
 
-public class ledControl extends ActionBarActivity {
+public class ledControl extends AppCompatActivity {
 
    // Button btnOn, btnOff, btnDis;
     Button On, Off, Discnt, Abt;
@@ -134,7 +134,7 @@ public class ledControl extends ActionBarActivity {
 
     public  void about(View v)
     {
-        if(v.getId() == R.id.abt)
+        //if(v.getId() == R.id.abt)
         {
             Intent i = new Intent(this, AboutActivity.class);
             startActivity(i);
@@ -203,7 +203,7 @@ public class ledControl extends ActionBarActivity {
             if (!ConnectSuccess)
             {
                 msg("Connection Failed. Is it a SPP Bluetooth? Try again.");
-                finish();
+                //finish();
             }
             else
             {
