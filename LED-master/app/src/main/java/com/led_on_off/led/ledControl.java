@@ -18,8 +18,10 @@ import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.os.AsyncTask;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.UUID;
 
 import android.os.Handler;
@@ -125,7 +127,7 @@ public class ledControl extends AppCompatActivity {
         {
             try
             {
-                btSocket.getOutputStream().write("0".toString().getBytes());
+                btSocket.getOutputStream().write("bye".toString().getBytes());
             }
             catch (IOException e)
             {
@@ -140,7 +142,7 @@ public class ledControl extends AppCompatActivity {
         {
             try
             {
-                btSocket.getOutputStream().write("1".toString().getBytes());
+                btSocket.getOutputStream().write("hello".toString().getBytes());
             }
             catch (IOException e)
             {
@@ -149,14 +151,76 @@ public class ledControl extends AppCompatActivity {
         }
     }
 
+    void beginListenForData()
+    {
+        final Handler handler = new Handler();
+        final byte delimiter = 10; //This is the ASCII code for a newline character
+
+        stopWorker = false;
+        readBufferPosition = 0;
+        readBuffer = new byte[1024];
+        workerThread = new Thread(new Runnable()
+        {
+            public void run()
+            {
+                while(!Thread.currentThread().isInterrupted() && !stopWorker)
+                {
+                    try
+                    {
+                        int bytesAvailable = mmInputStream.available();
+                        if(bytesAvailable > 0)
+                        {
+                            byte[] packetBytes = new byte[bytesAvailable];
+                            mmInputStream.read(packetBytes);
+                            for(int i=0;i<bytesAvailable;i++)
+                            {
+                                byte b = packetBytes[i];
+                                if(b == delimiter)
+                                {
+                                    byte[] encodedBytes = new byte[readBufferPosition];
+                                    System.arraycopy(readBuffer, 0, encodedBytes, 0, encodedBytes.length);
+                                    final String data = new String(encodedBytes, "US-ASCII");
+                                    readBufferPosition = 0;
+
+                                    handler.post(new Runnable()
+                                    {
+                                        public void run()
+                                        {
+                                            recvText.setText(data);
+                                        }
+                                    });
+                                }
+                                else
+                                {
+                                    readBuffer[readBufferPosition++] = b;
+                                }
+                            }
+                        }
+                    }
+                    catch (IOException ex)
+                    {
+                        stopWorker = true;
+                    }
+                }
+            }
+        });
+
+        workerThread.start();
+    }
+
     private void receiveData()
     {
         if (btSocket != null) {
             try {
-                btSocket.getOutputStream().write("2".toString().getBytes());
-                if (mmInputStream.available() > 0) {
-                    recvText.setText("Data:" + (char) mmInputStream.read());
-                }
+                btSocket.getOutputStream().write("7".toString().getBytes());
+//                if (mmInputStream.available() > 0) {
+//                    BufferedReader r = new BufferedReader(new InputStreamReader(mmInputStream));
+//                    StringBuilder total = new StringBuilder();
+//                    for (String line; (line = r.readLine()) != null; ) {
+//                        total.append(line).append('\n');
+//                    }
+//                    recvText.setText("Data:" + total);
+//                }
             } catch (IOException e)
             {
                 msg(e.getMessage());
@@ -258,6 +322,7 @@ public class ledControl extends AppCompatActivity {
                 try {
 
                     mmInputStream = btSocket.getInputStream();
+                    beginListenForData();
 
                 } catch (Exception e) {
                     msg(e.getMessage());
