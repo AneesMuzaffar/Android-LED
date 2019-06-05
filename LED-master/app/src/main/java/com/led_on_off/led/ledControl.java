@@ -10,6 +10,7 @@ import android.bluetooth.BluetoothSocket;
 import android.content.Intent;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -28,8 +29,7 @@ import android.os.Handler;
 
 public class ledControl extends AppCompatActivity {
 
-   // Button btnOn, btnOff, btnDis;
-    Button On, Off, Discnt, Abt;
+   //
     String address = null;
     private ProgressDialog progress;
     BluetoothAdapter myBluetooth = null;
@@ -44,7 +44,8 @@ public class ledControl extends AppCompatActivity {
     int readBufferPosition;
     volatile boolean stopWorker;
     InputStream mmInputStream;
-    TextView recvText;
+    EditText in, out;
+    Button send;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -57,53 +58,20 @@ public class ledControl extends AppCompatActivity {
         //view of the ledControl
         setContentView(R.layout.activity_led_control);
 
-        //call the widgets
-        On = (Button)findViewById(R.id.on_btn);
-        Off = (Button)findViewById(R.id.off_btn);
-        Discnt = (Button)findViewById(R.id.dis_btn);
-        Abt = (Button)findViewById(R.id.abt_btn);
+        in = findViewById(R.id.et_in);
+        out = findViewById(R.id.et_out);
+        send = findViewById(R.id.btn_send);
 
-        new ConnectBT().execute(); //Call the class to connect
-
-        //commands to be sent to bluetooth
-        On.setOnClickListener(new View.OnClickListener()
-        {
-            @Override
-            public void onClick(View v)
-            {
-                turnOnLed();      //method to turn on
-            }
-        });
-
-        Off.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v)
-            {
-                turnOffLed();   //method to turn off
-            }
-        });
-
-        Discnt.setOnClickListener(new View.OnClickListener()
-        {
-            @Override
-            public void onClick(View v)
-            {
-                Disconnect(); //close connection
-            }
-        });
-
-        (findViewById(R.id.recv_btn)).setOnClickListener(new View.OnClickListener() {
+        send.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                receiveData();
+                msg("Sending string: " + out.getText().toString());
+                sendString(out.getText().toString());
+                out.setText("");
             }
         });
 
-        recvText = findViewById(R.id.tv_recv);
-
-        stopWorker = false;
-        readBufferPosition = 0;
-        readBuffer = new byte[1024];
+        new ConnectBT().execute(); //Call the class to connect
     }
 
     private void Disconnect()
@@ -121,31 +89,11 @@ public class ledControl extends AppCompatActivity {
 
     }
 
-    private void turnOffLed()
-    {
-        if (btSocket!=null)
-        {
-            try
-            {
-                btSocket.getOutputStream().write("bye".toString().getBytes());
-            }
-            catch (IOException e)
-            {
-                msg("Error");
-            }
-        }
-    }
-
-    private void turnOnLed()
-    {
-        if (btSocket!=null)
-        {
-            try
-            {
-                btSocket.getOutputStream().write("hello".toString().getBytes());
-            }
-            catch (IOException e)
-            {
+    private void sendString(String s) {
+        if (btSocket != null) {
+            try {
+                btSocket.getOutputStream().write(s.getBytes());
+            } catch (IOException e) {
                 msg("Error");
             }
         }
@@ -186,7 +134,7 @@ public class ledControl extends AppCompatActivity {
                                     {
                                         public void run()
                                         {
-                                            recvText.setText(data);
+                                            in.setText(in.getText().toString() + "\n" + data);
                                         }
                                     });
                                 }
@@ -207,27 +155,6 @@ public class ledControl extends AppCompatActivity {
 
         workerThread.start();
     }
-
-    private void receiveData()
-    {
-        if (btSocket != null) {
-            try {
-                btSocket.getOutputStream().write("7".toString().getBytes());
-//                if (mmInputStream.available() > 0) {
-//                    BufferedReader r = new BufferedReader(new InputStreamReader(mmInputStream));
-//                    StringBuilder total = new StringBuilder();
-//                    for (String line; (line = r.readLine()) != null; ) {
-//                        total.append(line).append('\n');
-//                    }
-//                    recvText.setText("Data:" + total);
-//                }
-            } catch (IOException e)
-            {
-                msg(e.getMessage());
-            }
-        }
-    }
-
     // fast way to call Toast
     private void msg(String s)
     {
